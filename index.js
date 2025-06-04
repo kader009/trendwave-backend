@@ -4,6 +4,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
+import validateRequest from './src/middleware/validateRequest.js';
+import { userCreateValidation } from './src/validation/userValidation.js';
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -56,7 +58,7 @@ async function run() {
     await client.connect();
 
     // All DB collection here
-    const database = client.db('studyPlatform');
+    const database = client.db('trendwave');
     const SessionCollection = database.collection('session');
     const UserCollection = database.collection('user');
     const NoteCollection = database.collection('note');
@@ -368,32 +370,36 @@ async function run() {
     });
 
     // user create and save in the database
-    app.post('/api/v1/create-user', async (req, res) => {
-      const data = req.body;
-      const email = data.email;
-      try {
-        const existingUser = await UserCollection.findOne({ email });
+    app.post(
+      '/api/v1/create-user',
+      validateRequest(userCreateValidation),
+      async (req, res) => {
+        const data = req.body;
+        const email = data.email;
+        try {
+          const existingUser = await UserCollection.findOne({ email });
 
-        if (existingUser) {
-          res.status(409).send({
+          if (existingUser) {
+            res.status(409).send({
+              successs: false,
+              message: 'Email already exist in the database',
+            });
+          }
+          const result = await UserCollection.insertOne(data);
+          res.send({
+            successs: true,
+            message: 'User created successfully.',
+            result,
+          });
+        } catch (error) {
+          console.log(error);
+          res.status(500).send({
             successs: false,
-            message: 'Email already exist in the database',
+            message: 'External server error.',
           });
         }
-        const result = await UserCollection.insertOne(data);
-        res.send({
-          successs: true,
-          message: 'User created successfully.',
-          result,
-        });
-      } catch (error) {
-        console.log(error);
-        res.status(500).send({
-          successs: false,
-          message: 'External server error.',
-        });
       }
-    });
+    );
 
     // get all user here
     app.get('/api/v1/user', async (req, res) => {
