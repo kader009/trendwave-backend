@@ -83,26 +83,35 @@ async function run() {
       try {
         const PopularProduct = await ProductCollection.find()
           .sort({ rating: -1 })
-          .limit(8).toArray();
+          .limit(8)
+          .toArray();
         res.status(200).json(PopularProduct);
       } catch (error) {
         console.log(error);
         res
           .status(404)
-          .json({ message: 'popular products not found.', error: error.message });
+          .json({
+            message: 'popular products not found.',
+            error: error.message,
+          });
       }
     });
 
-    // get approved session by tutor email
-    app.get('/api/v1/session/approved/:email', async (req, res) => {
-      const email = req.params.email;
+    // get product with flash sale
+    app.get('/api/v1/flash-sale', async (req, res) => {
       try {
-        const query = { tutorEmail: email, status: 'approved' };
-        const Approvesession = await SessionCollection.find(query).toArray();
-        res.status(200).send(Approvesession);
+        const query = {
+          totalSales: { $gt: 200 },
+          rating: { $gte: 4.0 },
+        };
+        const FlashSale = await ProductCollection.find(query)
+          .sort()
+          .limit(15)
+          .toArray();
+        res.status(200).send(FlashSale);
       } catch (error) {
         console.log(error);
-        res.status(404).json({ message: 'approved session not found.' });
+        res.status(404).json({ message: 'flash sale products not found.' });
       }
     });
 
