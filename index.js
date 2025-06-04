@@ -59,16 +59,16 @@ async function run() {
 
     // All DB collection here
     const database = client.db('trendwave');
-    const SessionCollection = database.collection('session');
+    const ProductCollection = database.collection('products');
     const UserCollection = database.collection('user');
     const NoteCollection = database.collection('note');
     const MaterialCollection = database.collection('material');
     const BookedCollection = database.collection('booked');
 
     // get all session data here
-    app.get('/api/v1/session', async (req, res) => {
-      const sessiondata = await SessionCollection.find().toArray();
-      res.send(sessiondata);
+    app.get('/api/v1/products', async (req, res) => {
+      const productdata = await ProductCollection.find().toArray();
+      res.send(productdata);
     });
 
     // post session from the tutor
@@ -78,16 +78,18 @@ async function run() {
       res.send(result);
     });
 
-    // get approved session only
-    app.get('/api/v1/session/approved', async (req, res) => {
+    // get top popular products
+    app.get('/api/v1/popular', async (req, res) => {
       try {
-        const Approvesession = await SessionCollection.find({
-          status: 'approved',
-        }).toArray();
-        res.status(200).send(Approvesession);
+        const PopularProduct = await ProductCollection.find()
+          .sort({ rating: -1 })
+          .limit(8).toArray();
+        res.status(200).json(PopularProduct);
       } catch (error) {
         console.log(error);
-        res.status(404).json({ message: 'approved session not found.' });
+        res
+          .status(404)
+          .json({ message: 'popular products not found.', error: error.message });
       }
     });
 
