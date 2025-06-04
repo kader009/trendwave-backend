@@ -368,7 +368,7 @@ async function run() {
     });
 
     // user create and save in the database
-    app.post('/api/v1/user', async (req, res) => {
+    app.post('/api/v1/create-user', async (req, res) => {
       const data = req.body;
       const email = data.email;
       try {
@@ -410,13 +410,6 @@ async function run() {
       res.send(allUser);
     });
 
-    // get tutor based on role
-    app.get('/api/v1/tutor', async (req, res) => {
-      const tutor = { role: 'tutor' };
-      const Tutorresponse = await UserCollection.find(tutor).toArray();
-      res.send(Tutorresponse);
-    });
-
     // login user
     app.post('/api/v1/login', async (req, res) => {
       const { email, password } = req.body;
@@ -443,57 +436,6 @@ async function run() {
         user,
         token,
       });
-    });
-
-    // delete note based on the id
-    app.delete('/api/v1/note/:id', async (req, res) => {
-      const id = req.params.id;
-      try {
-        const deleteNote = await NoteCollection.deleteOne({
-          _id: new ObjectId(id),
-        });
-
-        if (deleteNote.deletedCount === 1) {
-          res
-            .status(200)
-            .json({ successs: true, message: 'Note delete successfully.' });
-        } else {
-          res.status(404).json({ successs: false, message: 'Note not found.' });
-        }
-      } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: 'Failed to delete the note.' });
-      }
-    });
-
-    // update note data based on the id
-    app.patch('/api/v1/note/:id', async (req, res) => {
-      const id = req.params.id;
-      const { title, description } = req.body;
-
-      try {
-        const updateNote = await NoteCollection.updateOne(
-          { _id: new ObjectId(id) },
-          { $set: { title, description } }
-        );
-
-        if (updateNote.matchedCount === 1 && updateNote.modifiedCount === 1) {
-          res.status(200).json({
-            success: true,
-            message: 'Note update successfully',
-          });
-        } else {
-          res.status(404).json({
-            successs: false,
-            message: 'Note not found.',
-          });
-        }
-      } catch (error) {
-        console.log(error);
-        res.status(500).json({
-          message: 'Fail to update note data.',
-        });
-      }
     });
 
     console.log('You successfully connected to MongoDB!');
