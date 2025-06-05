@@ -61,21 +61,20 @@ async function run() {
     const database = client.db('trendwave');
     const ProductCollection = database.collection('products');
     const UserCollection = database.collection('user');
-    const NoteCollection = database.collection('note');
     const MaterialCollection = database.collection('material');
     const BookedCollection = database.collection('booked');
 
-    // get all session data here
+    // get all product data
     app.get('/api/v1/products', async (req, res) => {
       const productdata = await ProductCollection.find().toArray();
-      res.send(productdata);
+      res.status(200).send(productdata);
     });
 
-    // post session from the tutor
-    app.post('/api/v1/session', async (req, res) => {
-      const SessionPost = req.body;
-      const result = await SessionCollection.insertOne(SessionPost);
-      res.send(result);
+    // post product data
+    app.post('/api/v1/products', async (req, res) => {
+      const Createproducts = req.body;
+      const result = await ProductCollection.insertOne(Createproducts);
+      res.status(200).send(result);
     });
 
     // get top popular products
@@ -88,12 +87,10 @@ async function run() {
         res.status(200).json(PopularProduct);
       } catch (error) {
         console.log(error);
-        res
-          .status(404)
-          .json({
-            message: 'popular products not found.',
-            error: error.message,
-          });
+        res.status(404).json({
+          message: 'popular products not found.',
+          error: error.message,
+        });
       }
     });
 
@@ -108,57 +105,61 @@ async function run() {
           .sort()
           .limit(15)
           .toArray();
-        res.status(200).send(FlashSale);
+        res
+          .status(200)
+          .json({ message: 'flash sale product get successfully', FlashSale });
       } catch (error) {
         console.log(error);
         res.status(404).json({ message: 'flash sale products not found.' });
       }
     });
 
-    // single session get here
-    app.get('/api/v1/session/:id', async (req, res) => {
+    // single product get here
+    app.get('/api/v1/products/:id', async (req, res) => {
       const id = req.params.id;
 
       if (!ObjectId.isValid(id)) {
-        return res.status(400).send({ message: 'Invalid session ID format' });
+        return res.status(400).send({ message: 'Invalid product ID format' });
       }
 
       try {
-        const sessiondata = await SessionCollection.findOne({
+        const Productdata = await ProductCollection.findOne({
           _id: new ObjectId(id),
         });
 
-        if (!sessiondata) {
-          return res.status(404).send({ message: 'Session not found' });
+        if (!Productdata) {
+          return res.status(404).send({ message: 'Product not found' });
         }
 
-        res.send(sessiondata);
+        res
+          .status(200)
+          .send({ message: 'Product get successfully', Productdata });
       } catch (error) {
-        console.error('Error fetching session:', error);
+        console.error('Error fetching products:', error);
         res.status(500).send({ message: 'Server error', error });
       }
     });
 
-    // single session delete here
-    app.delete('/api/v1/session/:id', async (req, res) => {
+    // single product delete here
+    app.delete('/api/v1/products/:id', async (req, res) => {
       const id = req.params.id;
       try {
-        const deleteNote = await SessionCollection.deleteOne({
+        const deleteNote = await ProductCollection.deleteOne({
           _id: new ObjectId(id),
         });
 
         if (deleteNote.deletedCount === 1) {
           res
             .status(200)
-            .json({ successs: true, message: 'session delete successfully.' });
+            .json({ successs: true, message: 'product delete successfully.' });
         } else {
           res
             .status(404)
-            .json({ successs: false, message: 'session not found.' });
+            .json({ successs: false, message: 'product not found.' });
         }
       } catch (error) {
         console.log(error);
-        res.status(500).json({ message: 'Failed to delete the session.' });
+        res.status(500).json({ message: 'Failed to delete the product.' });
       }
     });
 
