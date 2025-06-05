@@ -61,8 +61,8 @@ async function run() {
     const database = client.db('trendwave');
     const ProductCollection = database.collection('products');
     const UserCollection = database.collection('user');
+    const OrderCollection = database.collection('orders'); 
     const MaterialCollection = database.collection('material');
-    const BookedCollection = database.collection('booked');
 
     // get all product data
     app.get('/api/v1/products', async (req, res) => {
@@ -103,7 +103,7 @@ async function run() {
         };
         const FlashSale = await ProductCollection.find(query)
           .sort()
-          .limit(15)
+          .limit(12)
           .toArray();
         res
           .status(200)
@@ -347,16 +347,16 @@ async function run() {
       }
     });
 
-    // booked session by email
-    app.get('/api/v1/book-session/:email', async (req, res) => {
+    // orders query by email
+    app.get('/api/v1/orders/:email', async (req, res) => {
       const email = req.params.email;
       const query = { studentEmail: email };
-      const getBooked = await BookedCollection.find(query).toArray();
+      const getBooked = await OrderCollection.find(query).toArray();
       res.send(getBooked);
     });
 
-    // get book sesion by id
-    app.get('/api/v1/book-session/:id', async (req, res) => {
+    // get orders by id
+    app.get('/api/v1/orders/:id', async (req, res) => {
       const { id } = req.params;
 
       try {
