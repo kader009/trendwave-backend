@@ -114,6 +114,26 @@ async function run() {
       }
     });
 
+    // top category list
+    app.get('/api/v1/category', async (req, res) => {
+      try {
+        const query = {
+          totalSales: { $gt: 200 },
+          rating: { $gte: 3.6 },
+        };
+        const Category = await ProductCollection.find(query)
+          .sort()
+          .limit(4)
+          .toArray();
+        res
+          .status(200)
+          .json({ message: 'category product get successfully', Category });
+      } catch (error) {
+        console.log(error);
+        res.status(404).json({ message: 'category products not found.' });
+      }
+    });
+
     // single product get here
     app.get('/api/v1/products/:id', async (req, res) => {
       const id = req.params.id;
@@ -309,8 +329,8 @@ async function run() {
       }
     });
 
-    // booked session post
-    app.post('/api/v1/book-session', async (req, res) => {
+    // orders post here
+    app.post('/api/v1/orders', async (req, res) => {
       const { sessionId, studentEmail, registrationFee, tutorEmail } = req.body;
 
       try {
