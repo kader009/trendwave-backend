@@ -61,7 +61,7 @@ async function run() {
     const database = client.db('trendwave');
     const ProductCollection = database.collection('products');
     const UserCollection = database.collection('user');
-    const OrderCollection = database.collection('orders'); 
+    const OrderCollection = database.collection('orders');
     const MaterialCollection = database.collection('material');
 
     // get all product data
@@ -84,7 +84,12 @@ async function run() {
           .sort({ rating: -1 })
           .limit(8)
           .toArray();
-        res.status(200).json(PopularProduct);
+        res
+          .status(200)
+          .json({
+            message: 'Popular product get successfully',
+            PopularProduct,
+          });
       } catch (error) {
         console.log(error);
         res.status(404).json({
