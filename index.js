@@ -62,7 +62,7 @@ async function run() {
     const ProductCollection = database.collection('products');
     const UserCollection = database.collection('user');
     const OrderCollection = database.collection('orders');
-    const MaterialCollection = database.collection('material');
+    const WishlistCollection = database.collection('wishlist');
 
     // get all product data
     app.get('/api/v1/products', async (req, res) => {
@@ -364,12 +364,52 @@ async function run() {
       }
     });
 
+    // post wishlist data
+    app.post('/api/v1/wishlist', async (req, res) => {
+      const { productId, productName, category, rating, price, image, customerEmail } =
+        req.body;
+
+      try {
+        const result = await WishlistCollection.insertOne({
+          productId,
+          productName,
+          category,
+          rating,
+          price,
+          image,
+          customerEmail,
+        });
+
+        if (result.insertedId) {
+          return res.status(200).json({
+            message: 'Wishlist added successfully',
+            insertedId: result.insertedId,
+          });
+        } else {
+          return res.status(500).json({
+            error: ' failed to insert Wishlist data in to the database',
+          });
+        }
+      } catch (error) {
+        console.error('Error in Wishlist', error);
+        res.status(500).json({ error: 'internal server error' });
+      }
+    });
+
     // orders query by email
     app.get('/api/v1/orders/:email', async (req, res) => {
       const email = req.params.email;
-      const query = { studentEmail: email };
-      const getBooked = await OrderCollection.find(query).toArray();
-      res.send(getBooked);
+      const query = { customerEmail: email };
+      const getOrder = await OrderCollection.find(query).toArray();
+      res.send(getOrder);
+    });
+
+    // orders query by email
+    app.get('/api/v1/wishlist/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { customerEmail: email };
+      const getOrder = await OrderCollection.find(query).toArray();
+      res.send(getOrder);
     });
 
     // get orders by id
