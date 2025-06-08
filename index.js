@@ -84,12 +84,10 @@ async function run() {
           .sort({ rating: -1 })
           .limit(8)
           .toArray();
-        res
-          .status(200)
-          .json({
-            message: 'Popular product get successfully',
-            PopularProduct,
-          });
+        res.status(200).json({
+          message: 'Popular product get successfully',
+          PopularProduct,
+        });
       } catch (error) {
         console.log(error);
         res.status(404).json({
@@ -334,40 +332,34 @@ async function run() {
       }
     });
 
-    // orders post here
+    // orders post for customer
     app.post('/api/v1/orders', async (req, res) => {
-      const { sessionId, studentEmail, registrationFee, tutorEmail } = req.body;
+      const { productId, productName, category, rating, price, image, customerEmail } =
+        req.body;
 
       try {
-        const session = await SessionCollection.findOne({
-          _id: new ObjectId(sessionId),
-        });
-
-        if (!session) {
-          return res.status(404).json({ error: 'Session not found' });
-        }
-
-        const result = await BookedCollection.insertOne({
-          sessionId,
-          studentEmail,
-          registrationFee,
-          tutorEmail,
-          status: 'booked',
-          bookedAt: new Date(),
+        const result = await OrderCollection.insertOne({
+          productId,
+          productName,
+          category,
+          rating,
+          price,
+          image,
+          customerEmail,
         });
 
         if (result.insertedId) {
           return res.status(200).json({
-            message: 'Booking added successfully',
+            message: 'Order added successfully',
             insertedId: result.insertedId,
           });
         } else {
           return res.status(500).json({
-            error: ' failed to insert booking data in to the database',
+            error: ' failed to insert order data in to the database',
           });
         }
       } catch (error) {
-        console.error('Error in booking session', error);
+        console.error('Error in order session', error);
         res.status(500).json({ error: 'internal server error' });
       }
     });
