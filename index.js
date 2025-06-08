@@ -267,12 +267,6 @@ async function run() {
       res.send(saveMaterial);
     });
 
-    // get all material route
-    app.get('/api/v1/material', async (req, res) => {
-      const getAllmaterial = await MaterialCollection.find().toArray();
-      res.send(getAllmaterial);
-    });
-
     // get material based on the email
     app.get('/api/v1/material/:email', verifyToken, async (req, res) => {
       const email = req.params.email;
@@ -332,10 +326,25 @@ async function run() {
       }
     });
 
+    // get all orders route
+    app.get('/api/v1/orders', async (req, res) => {
+      const getAllOrders = await OrderCollection.find().toArray();
+      res.send(getAllOrders);
+    });
+
     // orders post for customer
     app.post('/api/v1/orders', async (req, res) => {
-      const { productId, productName, category, rating, price, image, customerEmail } =
-        req.body;
+      const {
+        productId,
+        productName,
+        category,
+        rating,
+        price,
+        image,
+        customerEmail,
+        paymentStatus,
+        orderDate,
+      } = req.body;
 
       try {
         const result = await OrderCollection.insertOne({
@@ -346,6 +355,8 @@ async function run() {
           price,
           image,
           customerEmail,
+          paymentStatus,
+          orderDate,
         });
 
         if (result.insertedId) {
@@ -366,8 +377,15 @@ async function run() {
 
     // post wishlist data
     app.post('/api/v1/wishlist', async (req, res) => {
-      const { productId, productName, category, rating, price, image, customerEmail } =
-        req.body;
+      const {
+        productId,
+        productName,
+        category,
+        rating,
+        price,
+        image,
+        customerEmail,
+      } = req.body;
 
       try {
         const result = await WishlistCollection.insertOne({
@@ -408,7 +426,7 @@ async function run() {
     app.get('/api/v1/wishlist/:email', async (req, res) => {
       const email = req.params.email;
       const query = { customerEmail: email };
-      const getOrder = await OrderCollection.find(query).toArray();
+      const getOrder = await WishlistCollection.find(query).toArray();
       res.send(getOrder);
     });
 
