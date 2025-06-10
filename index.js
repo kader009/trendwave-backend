@@ -206,59 +206,54 @@ async function run() {
       }
     });
 
-    // get session based on tutor email
-    app.get('/api/v1/session/email/:email', async (req, res) => {
+    // get product based on seller email
+    app.get('/api/v1/products/email/:email', async (req, res) => {
       const email = req.params.email;
-      const query = { tutorEmail: email };
+      const query = { sellerEmail: email };
       try {
-        const sessionFortutor = await SessionCollection.find(query).toArray();
-        res.send(sessionFortutor);
+        const productForseller = await ProductCollection.find(query).toArray();
+        res.send(productForseller);
       } catch (error) {
         console.log(error);
-        res.status(500).send({ message: 'server error', error });
+        res.status(500).send({ message: 'server error', error }); 
       }
     });
 
-    // admin registration fee update here
-    app.patch('/api/v1/session/:id', async (req, res) => {
+    // admin product update here
+    app.patch('/api/v1/products/:id', async (req, res) => {
       const { id } = req.params;
-      const { registrationFee } = req.body;
-
+    
       if (!ObjectId.isValid(id)) {
-        return res.status(400).json({ error: 'Invalid session ID' });
+        return res.status(400).json({ error: 'Invalid product ID' });
       }
-
+    
+      const updatedData = req.body;
+    
       try {
-        const existingSession = await SessionCollection.findOne({
-          _id: new ObjectId(id),
-        });
-
-        if (!existingSession) {
-          res.status(404).json({ message: 'session not found' });
-        }
-
-        const updateSession = await SessionCollection.updateOne(
+        const result = await ProductCollection.updateOne(
           { _id: new ObjectId(id) },
-          { $set: { registrationFee } }
+          { $set: updatedData }
         );
-
-        if (updateSession.matchedCount === 0) {
-          return res.status(404).json({ message: 'session not found' });
+    
+        if (result.matchedCount === 0) {
+          return res.status(404).json({ message: 'Product not found' });
         }
-
-        // Fetch the updated session document
-        const updatedSession = await SessionCollection.findOne({
+    
+        const updatedSession = await ProductCollection.findOne({
           _id: new ObjectId(id),
         });
-
-        res
-          .status(200)
-          .json({ message: 'session update successfully', updatedSession });
+    
+        res.status(200).json({
+          message: 'Product updated successfully',
+          updatedSession,
+        });
       } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'failed to update session' });
+        res.status(500).json({ message: 'Failed to update product' });
       }
     });
+    
+    
 
     // material post route for database
     app.post('/api/v1/material', async (req, res) => {
@@ -280,25 +275,7 @@ async function run() {
       }
     });
 
-    // delete material from tutor dashboard
-    app.delete('/api/v1/material/:id', async (req, res) => {
-      const { id } = req.params;
-
-      try {
-        const deleteMaterial = await MaterialCollection.deleteOne({
-          _id: new ObjectId(id),
-        });
-
-        if (deleteMaterial.deletedCount === 0) {
-          return res.status(404).json({ error: 'Material not found' });
-        }
-
-        res.status(200).json({ message: 'Material deleted successfully' });
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'failed to delete material' });
-      }
-    });
+    
 
     // update material from the tutor
     app.patch('/api/v1/material/:id', async (req, res) => {
@@ -411,6 +388,46 @@ async function run() {
       } catch (error) {
         console.error('Error in Wishlist', error);
         res.status(500).json({ error: 'internal server error' });
+      }
+    });
+
+    // delete wishlist from customar dashboard
+    app.delete('/api/v1/orders/:id', async (req, res) => {
+      const { id } = req.params;
+
+      try {
+        const deleteOrder = await OrderCollection.deleteOne({ 
+          _id: new ObjectId(id),
+        });
+
+        if (deleteOrder.deletedCount === 0) {
+          return res.status(404).json({ error: 'Order not found' });
+        }
+
+        res.status(200).json({ message: 'Order deleted successfully' });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'failed to delete Order' });
+      }
+    });
+
+    // delete wishlist from customar dashboard
+    app.delete('/api/v1/wishlist/:id', async (req, res) => {
+      const { id } = req.params;
+
+      try {
+        const deleteWishlist = await WishlistCollection.deleteOne({
+          _id: new ObjectId(id),
+        });
+
+        if (deleteWishlist.deletedCount === 0) {
+          return res.status(404).json({ error: 'Wishlist not found' });
+        }
+
+        res.status(200).json({ message: 'Wishlist deleted successfully' });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'failed to delete Wishlist' });
       }
     });
 
