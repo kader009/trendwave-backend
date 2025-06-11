@@ -15,7 +15,7 @@ app.use(
   cors({
     origin: [
       'http://localhost:3000',
-      'https://study-platform-frontend-azure.vercel.app',
+      'https://trendwave-frontend.vercel.app',
     ],
     credentials: true,
   })
