@@ -323,20 +323,32 @@ async function run() {
         orderDate,
       } = req.body;
 
-      try {
-        const result = await OrderCollection.insertOne({
-          productId,
-          productName,
-          category,
-          rating,
-          price,
-          image,
-          customerEmail,
-          paymentStatus,
-          orderDate,
-        });
+      const session = client.startSession();
 
-        if (result.insertedId) {
+      try {
+        await session.withTransaction(async () =>{
+          
+          const result = await OrderCollection.insertOne({
+            productId,
+            productName,
+            category,
+            rating,
+            price,
+            image,
+            customerEmail,
+            paymentStatus,
+            orderDate,
+          });
+        }, {session})
+
+        const productResult = await ProductCollection.updateOne({_id: new ObjectId(productId)}, {
+          $inc:{
+            stock: -1,
+            totalSales: 1
+          }
+        })
+
+        if (result.insertedId && productResult.modifiedCount > 0) {
           return res.status(200).json({
             message: 'Order added successfully',
             insertedId: result.insertedId,
